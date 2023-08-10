@@ -22,6 +22,7 @@ describe('Task1', () => {
         const deployer = await blockchain.treasury('deployer');
 
         const deployResult = await task1.sendDeploy(deployer.getSender(), toNano('0.05'));
+        1;
 
         expect(deployResult.transactions).toHaveTransaction({
             from: deployer.address,
