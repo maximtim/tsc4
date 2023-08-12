@@ -8,14 +8,31 @@
 
 (int) mod(int x, int y) asm "MOD";
 
+int is_upper_letter?(int symbol) inline {
+  return (symbol > 64) & (symbol < 91);
+}
+
+int is_lower_letter?(int symbol) inline {
+  return (symbol > 96) & (symbol < 123);
+}
+
 cell shift_chars(int shift, cell text) {
   var slc = text.begin_parse();
   var new_cell_b = begin_cell();
   
   while (~ slc.slice_data_empty?()) {
+    var char = slc~load_uint(8);
+
+    char = is_upper_letter?(char)
+      ? (char - 65 + shift).mod(26) + 65
+      : is_lower_letter?(char)
+        ? (char - 97 + shift).mod(26) + 97
+        : char;
+    
     new_cell_b = new_cell_b
       .store_uint(
-        (slc~load_uint(8) + shift).mod(256), ;; shifting and copying
+        ;; (slc~load_uint(8) + shift).mod(256), ;; shifting and copying
+        char,
         8);
   }
 
