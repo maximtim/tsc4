@@ -6,16 +6,38 @@
   character should go to the beginning. Return new text encoded in cell.
 -}
 
+cell shift_chars(int shift, cell text) {
+  var slc = text.begin_parse();
+  var new_cell_b = begin_cell();
+  
+  while (~ slc.slice_data_empty?()) {
+    new_cell_b = new_cell_b
+      .store_uint(
+        (slc~load_uint(8) + shift).mod(256), ;; shifting and copying
+        8);
+  }
+
+  cell next = null();
+
+  if (slc.slice_refs() > 0) {
+    next = shift_chars(shift, slc~load_ref());
+    new_cell_b = new_cell_b.store_ref(next);
+  }
+
+  return new_cell_b.end_cell();
+}
+
 () recv_internal() {
 }
 
 ;; testable
 (cell) caesar_cipher_encrypt(int shift, cell text) method_id {
-  return begin_cell().end_cell();
+  return shift_chars(shift, text);
 }
 
 ;; testable
 (cell) caesar_cipher_decrypt(int shift, cell text) method_id {
-  return begin_cell().end_cell();
+  return shift_chars(- shift, text);
 }
+
 
