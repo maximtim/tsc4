@@ -6,6 +6,10 @@
   this branch should be returned. Return empty cell if the branch is not found.
 -}
 
+forall X -> int is_null (X x) asm "ISNULL";
+forall X -> (tuple, ()) push_back (tuple tail, X head) asm "CONS";
+forall X -> (tuple, (X)) pop_back (tuple t) asm "UNCONS";
+
 () recv_internal() {
 }
 

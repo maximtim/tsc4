@@ -6,6 +6,8 @@
   character should go to the beginning. Return new text encoded in cell.
 -}
 
+(int) mod(int x, int y) asm "MOD";
+
 cell shift_chars(int shift, cell text) {
   var slc = text.begin_parse();
   var new_cell_b = begin_cell();
