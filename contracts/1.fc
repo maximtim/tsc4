@@ -31,61 +31,61 @@
   return begin_cell().end_cell();
 }
 
-(cell) find_branch_by_hash2(int hash, cell tree) method_id {
-  cell inner = begin_cell().end_cell();
+;; (cell) find_branch_by_hash2(int hash, cell tree) method_id {
+;;   cell inner = begin_cell().end_cell();
   
-  var c1 = begin_cell()
-    .store_ref(begin_cell().end_cell())
-    .store_uint(1, 8);
+;;   var c1 = begin_cell()
+;;     .store_ref(begin_cell().end_cell())
+;;     .store_uint(1, 8);
 
-  var c2 = begin_cell()
-    .store_uint(1, 8)
-    .store_ref(begin_cell().end_cell());
+;;   var c2 = begin_cell()
+;;     .store_uint(1, 8)
+;;     .store_ref(begin_cell().end_cell());
 
-  var c3 = begin_cell()
-    .store_ref(inner)
-    .store_uint(1, 8);
+;;   var c3 = begin_cell()
+;;     .store_ref(inner)
+;;     .store_uint(1, 8);
 
-  inner = begin_cell().store_uint(222, 8).end_cell();
+;;   inner = begin_cell().store_uint(222, 8).end_cell();
 
-  ;; ~dump(c1);
-  ;; ~dump(c2);
-  ;; ~dump(c3);
+;;   ;; ~dump(c1);
+;;   ;; ~dump(c2);
+;;   ;; ~dump(c3);
 
-  ;; var c1_ = c1.end_cell();
+;;   ;; var c1_ = c1.end_cell();
 
-  ;; var s1 = c1_.begin_parse();
+;;   ;; var s1 = c1_.begin_parse();
 
-  ;; ~dump(s1);
+;;   ;; ~dump(s1);
 
-  ;; var ref1 = s1.preload_ref();
+;;   ;; var ref1 = s1.preload_ref();
 
-  ;; ~dump(ref1);
-  ;; ~dump(s1);
+;;   ;; ~dump(ref1);
+;;   ;; ~dump(s1);
 
-  ;; var i1 = s1~load_uint(8);
+;;   ;; var i1 = s1~load_uint(8);
 
-  ;; ~dump(i1);
-  ;; ~dump(s1);
+;;   ;; ~dump(i1);
+;;   ;; ~dump(s1);
 
-  ;; ;; var i2 = s1~load_uint(8);
+;;   ;; ;; var i2 = s1~load_uint(8);
 
-  ;; ;; ~dump(i2);
-  ;; ;; ~dump(s1);
+;;   ;; ;; ~dump(i2);
+;;   ;; ;; ~dump(s1);
 
-  ;; var ref2 = s1~load_ref();
+;;   ;; var ref2 = s1~load_ref();
 
-  ;; ~dump(ref2);
-  ;; ~dump(s1);
+;;   ;; ~dump(ref2);
+;;   ;; ~dump(s1);
 
-  int x0 = 10;
+;;   int x0 = 10;
 
-  var x1 = 19.mod(16);
-  var x2 = (x0 - 14).mod(16);
+;;   var x1 = 19.mod(16);
+;;   var x2 = (x0 - 14).mod(16);
 
-  ~dump(x1);
-  ~dump(x2);
+;;   ~dump(x1);
+;;   ~dump(x2);
 
-  return begin_cell()
-    .end_cell();
-}
+;;   return begin_cell()
+;;     .end_cell();
+;; }
