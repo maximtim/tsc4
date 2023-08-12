@@ -1,8 +1,12 @@
 import { Blockchain, SandboxContract } from '@ton-community/sandbox';
-import { Cell, toNano } from 'ton-core';
+import { Cell, beginCell, toNano } from 'ton-core';
 import { Task1 } from '../wrappers/Task1';
 import '@ton-community/test-utils';
 import { compile } from '@ton-community/blueprint';
+
+function toBigInt(buf : Buffer) {
+    return BigInt('0x' + buf.toString('hex'));
+}
 
 describe('Task1', () => {
     let code: Cell;
@@ -34,5 +38,33 @@ describe('Task1', () => {
     it('should deploy', async () => {
         // the check is done inside beforeEach
         // blockchain and task1 are ready to use
+    });
+
+    it('finds the cell', async () => {
+        const targetCell = beginCell().storeUint(42, 6).endCell();
+
+        const tree = 
+            beginCell()
+                .storeUint(16, 8)
+                .storeRef(
+                    beginCell().storeUint(101, 8).endCell()
+                )
+                .storeRef(
+                    beginCell()
+                        .storeRef(targetCell)
+                    .endCell()
+                )
+            .endCell();
+
+        const { stackReader } = await blockchain.runGetMethod(task1.address, 'find_branch_by_hash', [
+            { type: 'int', value:  toBigInt(targetCell.hash()) },
+            { type: 'cell', cell: tree }
+        ]);
+
+        expect(
+            toBigInt(stackReader.readCell().hash())
+        ).toEqual(
+            toBigInt(targetCell.hash())
+        );
     });
 });
