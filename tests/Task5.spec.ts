@@ -38,8 +38,8 @@ describe('Task5', () => {
 
     it('calculates', async () => {
         const { stackReader, stack } = await blockchain.runGetMethod(task5.address, 'fibonacci_sequence', [
-            { type: 'int', value:  BigInt(201) },
-            { type: 'int', value:  BigInt(4) },
+            { type: 'int', value:  BigInt(370) },
+            { type: 'int', value:  BigInt(1) },
         ]);
 
         // const res = stackReader;
