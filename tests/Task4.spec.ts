@@ -45,7 +45,7 @@ describe('Task4', () => {
             beginCell()
                 .storeStringTail("i am")
                 .storeRef(
-                    beginCell().storeStringTail(" the one!").endCell()
+                    beginCell().storeStringTail(" the one! zZ").endCell()
                 )
             .endCell();
 
@@ -54,8 +54,15 @@ describe('Task4', () => {
             { type: 'cell', cell: cellStr }
         ]);
 
-        // console.log(cellStr.toString());
-        // console.log(stackReader.readCell().toString());
+        // const str01 = cellStr.asSlice().loadBuffer(100);
+
+        // const str1 = cellStr.bits.toString() + cellStr.refs[0].bits.toString();
+        // const resCell = stackReader.readCell();
+        // const str2 = resCell.bits.toString() + resCell.refs[0].bits.toString();
+
+        // console.log(str01);
+        // console.log(str1);
+        // console.log(str2);
         
 
         // expect(

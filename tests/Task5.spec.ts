@@ -1,5 +1,5 @@
 import { Blockchain, SandboxContract } from '@ton-community/sandbox';
-import { Cell, toNano } from 'ton-core';
+import { Cell, TupleItemInt, toNano } from 'ton-core';
 import { Task5 } from '../wrappers/Task5';
 import '@ton-community/test-utils';
 import { compile } from '@ton-community/blueprint';
@@ -34,5 +34,16 @@ describe('Task5', () => {
     it('should deploy', async () => {
         // the check is done inside beforeEach
         // blockchain and task5 are ready to use
+    });
+
+    it('calculates', async () => {
+        const { stackReader, stack } = await blockchain.runGetMethod(task5.address, 'fibonacci_sequence', [
+            { type: 'int', value:  BigInt(201) },
+            { type: 'int', value:  BigInt(4) },
+        ]);
+
+        // const res = stackReader;
+        // console.log(stackReader.readTuple());
+        
     });
 });
