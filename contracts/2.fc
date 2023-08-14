@@ -9,11 +9,39 @@
   After calculating the result matrix, the function should return final result (as tuple).
 -}
 
+int tlen (tuple t) asm "TLEN";
+
 () recv_internal() {
 }
 
 ;; testable
 (tuple) matrix_multiplier(tuple matrixA, tuple matrixB) method_id {
-  return null();
+  var (m_len, n_len, p_len, q_len) = (matrixA.tlen(), matrixB.tlen(), matrixB.tlen(), matrixB.at(0).tlen());
+  var result = empty_tuple();
+
+  int m = 0;
+  repeat (m_len) {
+    var rowA = matrixA.at(m);
+    var rowResult = empty_tuple();
+
+    int q = 0;
+    repeat (q_len) {
+      var result_m_q = 0;
+
+      int n = 0;
+      repeat(n_len) {
+        result_m_q += rowA.at(n) * matrixB.at(n).at(q);
+        n += 1;
+      }
+
+      rowResult~tpush(result_m_q);
+      q += 1;
+    }
+
+    result~tpush(rowResult);
+    m += 1;
+  }
+
+  return result;
 }
 
