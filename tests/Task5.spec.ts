@@ -38,17 +38,14 @@ describe('Task5', () => {
 
     it('calculates', async () => {
         const res1 = await blockchain.runGetMethod(task5.address, 'fibonacci_sequence', [
+            { type: 'int', value:  BigInt(370) },
             { type: 'int', value:  BigInt(1) },
-            { type: 'int', value:  BigInt(100) },
         ]);
 
         // const res2 = await blockchain.runGetMethod(task5.address, 'fibonacci_sequence2', [
+        //     { type: 'int', value:  BigInt(370) },
         //     { type: 'int', value:  BigInt(1) },
-        //     { type: 'int', value:  BigInt(100) },
         // ]);
-
-        // const res = stackReader;
-        // console.log(stackReader.readTuple());
         
         // console.log(res1.stackReader.readTuple());
         // console.log(res1.gasUsed);
