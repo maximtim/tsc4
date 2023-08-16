@@ -29,10 +29,12 @@ slice skip_first(slice x, int offset) asm "SDSKIPFIRST";
   var result = begin_cell();
   var res_remaining = 1023;
   int total_read_len = 0;
+  int prev_size = 0;
 
   if ((~ prev.is_null?())) {
     result = result.store_slice(prev);
-    res_remaining -= prev.slice_bits();
+    prev_size = prev.slice_bits();
+    res_remaining -= prev_size;
   }
 
   int not_ended = 1;
@@ -53,7 +55,7 @@ slice skip_first(slice x, int offset) asm "SDSKIPFIRST";
     }
   }
 
-  return (reader, (result.end_cell().begin_parse(), total_read_len));
+  return (reader, (result.end_cell().begin_parse(), total_read_len == 0 ? 0 : (total_read_len + prev_size)));
 }
 
 (tuple, builder) write_slice(tuple cells, builder writer, slice s) {
@@ -61,7 +63,7 @@ slice skip_first(slice x, int offset) asm "SDSKIPFIRST";
     return (cells, writer);
   }
 
-  var b_remaining = writer.bits_remaining();
+  var b_remaining = writer.bits_remaining() - 7;
   var s_remaining = s.slice_bits() - b_remaining;
 
   if (s_remaining <= 0) {

@@ -39,27 +39,34 @@ describe('Task3', () => {
     it('copies', async () => {
         let cellStr = 
             beginCell()
-                .storeStringTail("   i am")
+                .storeStringTail("   i am                                                          ")
                 .storeRef(
-                    beginCell().storeStringTail(" the one! zZ").endCell()
+                    beginCell()
+                        .storeStringTail(" the one! zZ                                                >>>>>>>")
+                        .storeRef(
+                            beginCell()
+                                .storeStringTail(" the one! zZ                                                 ")
+                            .endCell()
+                        )
+                    .endCell()
                 )
             .endCell();
 
-        // const cellStr = beginCell().storeUint(1, 1).endCell();
+        // const cellStr = beginCell().storeStringTail("   ").endCell();
 
         const { stackReader } = await blockchain.runGetMethod(task3.address, 'find_and_replace', [
             { type: 'int', value:  BigInt(32) },
-            { type: 'int', value:  BigInt(8224) },
+            { type: 'int', value:  BigInt(33) },
             { type: 'cell', cell: cellStr }
         ]);
 
-        const str1 = cellStr.bits.toString() + cellStr.refs[0].bits.toString();
+        const str1 = cellStr.bits.toString() + cellStr.refs[0].bits.toString() + cellStr.refs[0].refs[0].bits.toString();
         const resCell = stackReader.readCell();
-        const str2 = resCell.bits.toString();
+        const str2 = resCell.bits.toString() + resCell.refs[0].bits.toString();
 
-        console.log(str1);
-        console.log(cellStr.bits);
-        console.log(str2);
+        // console.log(str1);
+        // console.log(cellStr.bits);
+        // console.log(str2);
         
 
         // expect(
