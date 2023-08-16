@@ -1,5 +1,5 @@
 import { Blockchain, SandboxContract } from '@ton-community/sandbox';
-import { Cell, toNano } from 'ton-core';
+import { Cell, beginCell, toNano } from 'ton-core';
 import { Task3 } from '../wrappers/Task3';
 import '@ton-community/test-utils';
 import { compile } from '@ton-community/blueprint';
@@ -34,5 +34,38 @@ describe('Task3', () => {
     it('should deploy', async () => {
         // the check is done inside beforeEach
         // blockchain and task3 are ready to use
+    });
+
+    it('copies', async () => {
+        let cellStr = 
+            beginCell()
+                .storeStringTail("   i am")
+                .storeRef(
+                    beginCell().storeStringTail(" the one! zZ").endCell()
+                )
+            .endCell();
+
+        // const cellStr = beginCell().storeUint(1, 1).endCell();
+
+        const { stackReader } = await blockchain.runGetMethod(task3.address, 'find_and_replace', [
+            { type: 'int', value:  BigInt(32) },
+            { type: 'int', value:  BigInt(8224) },
+            { type: 'cell', cell: cellStr }
+        ]);
+
+        const str1 = cellStr.bits.toString() + cellStr.refs[0].bits.toString();
+        const resCell = stackReader.readCell();
+        const str2 = resCell.bits.toString();
+
+        console.log(str1);
+        console.log(cellStr.bits);
+        console.log(str2);
+        
+
+        // expect(
+        //     toBigInt(stackReader.readCell().hash())
+        // ).toEqual(
+        //     toBigInt(targetCell.hash())
+        // );
     });
 });

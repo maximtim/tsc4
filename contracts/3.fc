@@ -16,11 +16,241 @@
 
 -}
 
+int bit_size(int x) asm "UBITSIZE";
+int bits_remaining(builder b) asm "BREMBITS";
+forall X -> (tuple) to_tuple (X x) asm "NOP";
+forall X -> (tuple, ()) push_back (tuple tail, X head) asm "CONS";
+forall X -> (tuple, (X)) pop_back (tuple t) asm "UNCONS";
+int is_prefix?(slice x, slice y) asm "SDPFX";
+int uint_size(int x) asm "UBITSIZE";
+forall X -> int is_null? (X x) asm "ISNULL";
+slice substring(slice x, int offset, int len) asm "SDSUBSTR";
+slice skip_first(slice x, int offset) asm "SDSKIPFIRST";
+
+
+;; (slice, int) read_next_bit(slice from) {
+;;   if (from.slice_data_empty?()) {
+;;     if (from.slice_refs() > 0) {
+;;       return read_next_bit(from~load_ref().begin_parse());
+;;     } else {
+;;       return (from, -1);
+;;     }
+;;   }
+
+;;   var next = from~load_uint(1);
+;;   return (from, next);
+;; }
+
+(slice, (slice, int)) read_full_slice(slice reader, slice prev) {
+  var result = begin_cell();
+  var res_remaining = 1023;
+  int total_read_len = 0;
+
+  if ((~ prev.is_null?())) {
+    ~dump(222222);
+    result = result.store_slice(prev);
+    res_remaining -= prev.slice_bits();
+  }
+
+  int not_ended = 1;
+
+  while (not_ended & (total_read_len < res_remaining)) {
+    var read_remaining = reader.slice_bits();
+
+    if ((read_remaining > 0)) {
+      var read_len = min(res_remaining - total_read_len, read_remaining);
+      result = result.store_slice(reader~load_bits(read_len));
+      total_read_len += read_len;
+    } else {
+      if (reader.slice_refs() > 0) {
+        reader = reader~load_ref().begin_parse();
+      } else {
+        not_ended = 0;
+      }
+    }
+  }
+
+  return (reader, (result.end_cell().begin_parse(), total_read_len));
+}
+
+;; (tuple, ()) write_bit(tuple to, int bit) { ;; "to" is (tuple, builder)
+;;   builder writer = to.at(1);
+
+;;   if (writer.bits_remaining()) {
+;;     return (to_tuple([to.at(0), writer.store_uint(bit, 1)]), ());
+;;   } else {
+;;     var new_cell = writer.end_cell();
+;;     var cells = to.at(0);
+;;     cells~tpush(new_cell);
+
+;;     return (to_tuple([cells, begin_cell()]), ());
+;;   }
+;; }
+
+(tuple, builder) write_slice(tuple cells, builder writer, slice s) {
+  if (s.slice_data_empty?()) {
+    return (cells, writer);
+  }
+
+  var b_remaining = writer.bits_remaining();
+  var s_remaining = s.slice_bits() - b_remaining;
+
+  if (s_remaining <= 0) {
+    return (cells, writer.store_slice(s));
+  } else {
+    if (b_remaining > 0) {
+      writer = writer.store_slice(s~load_bits(b_remaining));
+    }
+
+    cells~push_back(writer);
+
+    return write_slice(cells, begin_cell(), s);
+  }
+}
+
+;; (tuple, builder) write_uint(tuple cells, builder writer, int number) { ;; has error if number == 10000
+;;   var size = number.uint_size();
+;;   if (size == 0) { size = 1; } ;; for number == 0
+
+;;   var b_remaining = writer.bits_remaining();
+;;   var s_remaining = size - b_remaining;
+
+;;   if (s_remaining <= 0) {
+;;     return (cells, writer.store_uint(number, size));
+;;   } else {
+;;     if (b_remaining > 0) {
+;;       var stored = number >> (s_remaining);
+;;       writer~store_uint(stored, b_remaining);
+;;       number = number % stored;
+;;     }
+
+;;     var new_cell = writer.end_cell();
+;;     cells~push_back(new_cell);
+
+;;     return write_slice(cells, begin_cell(), number);
+;;   }
+;; }
+
+;; (int, ()) next_chunk(int prev, int next_bit, int upper_bit) inline {
+;;   return (((prev & (~ upper_bit)) << 1) + upper_bit, ());
+;; }
+
 () recv_internal() {
 }
 
 ;; testable
+;; (cell) find_and_replace0(int flag, int value, cell linked_list) method_id {
+;;   var result_b = begin_cell();
+;;   var reader = linked_list.begin_parse();
+
+;;   int current_s_len = 0;
+;;   int current_chunk = 0;
+;;   int current_chunk_len = 0;
+;;   int flag_len = flag.bit_size();
+;;   int upper_bit = 1 << (flag_len - 1);
+
+;;   var cells_writer = to_tuple([empty_tuple(), result_b]);
+
+;;   ;; reading first chunk
+;;   while((current_chunk_len < flag_len) & ((int next_bit = reader~read_next_bit()) != -1)) {
+;;     current_chunk~next_chunk(next_bit, upper_bit);
+;;     current_chunk_len += 1;
+;;   }
+
+;;   ;; input too small
+;;   if (current_chunk_len < flag_len) {
+;;     return linked_list;
+;;   }
+
+;;   if (current_chunk == flag) {
+
+;;   }
+
+;;   while ((int next_bit = reader~read_next_bit()) != -1) {
+;;     current_chunk~next_chunk(next_bit, upper_bit);
+
+;;     if ((current_chunk == flag)) {
+
+;;     }
+
+;;     if (result_b.bits_remaining()) {
+
+;;     }
+;;   }
+
+;;   return begin_cell().end_cell();
+;; }
+
 (cell) find_and_replace(int flag, int value, cell linked_list) method_id {
-  return begin_cell().end_cell();
+  ~dump(linked_list);
+
+  var result = empty_tuple();
+  var writer = begin_cell();
+  var flag_len = flag.bit_size();
+  var value_len = value.bit_size();
+  var flag_s = begin_cell().store_uint(flag, flag_len).end_cell().begin_parse();
+  var value_s = begin_cell().store_uint(value, value_len).end_cell().begin_parse();
+
+  var reader = linked_list.begin_parse();
+  var (current_str, read_len) = reader~read_full_slice(null());
+  result~push_back(null());
+
+  ~dump(flag_s);
+  ~dump(flag_s.preload_uint(6));
+  ~dump(flag_len);
+  ~dump(value_s);
+  ~dump(value_s.slice_bits());
+  ~dump(current_str);
+  ~dump(current_str.preload_uint(6));
+  ~dump(read_len);
+  ~dump(reader);
+  ~dump(reader.slice_bits());
+  ~dump(result);
+  ~dump(flag_s.is_prefix?(current_str));
+
+  while (read_len > 0) {
+    ~dump(1111111111);
+    ~dump(read_len);
+    int i = 0;
+    int current_read_pos = 0;
+
+    while ((i + flag_len) <= (read_len)) {
+      if (flag_s.is_prefix?(current_str.skip_first(i - current_read_pos))) {
+        if (current_read_pos < i) {
+          writer = result~write_slice(writer, current_str~load_bits(i - current_read_pos));
+        }
+        writer = result~write_slice(writer, value_s);
+        current_str~load_bits(flag_len);
+        ~dump(i);
+        ~dump(current_str);
+        ;; ~dump(current_str.preload_bits(6));
+        i += flag_len;
+        current_read_pos = i;
+        ~dump(i);
+      } else {
+        i += 1;
+      }
+    }
+
+    var left_unmatched = i - current_read_pos - 1;
+    if (left_unmatched > 0) {
+      writer = result~write_slice(writer, current_str~load_bits(left_unmatched));
+    }
+
+    (current_str, read_len) = reader~read_full_slice(current_str);
+  }
+
+  writer = result~write_slice(writer, current_str);
+
+  var root = writer;
+
+  while (~ (var next = result~pop_back()).is_null?()) {
+    root = next
+      .store_ref(root.end_cell());
+  }
+
+  return root.end_cell();
+
+  ;; return begin_cell().end_cell();
 }
 
