@@ -81,9 +81,9 @@ describe('Task2', () => {
         ]);
 
         // const res = stackReader;
-        const res = stackReader.readTuple();
-        console.log(res.readTuple());
-        console.log(res.readTuple());
-        console.log(res.readTuple());
+        // const res = stackReader.readTuple();
+        // console.log(res.readTuple());
+        // console.log(res.readTuple());
+        // console.log(res.readTuple());
     });
 });
