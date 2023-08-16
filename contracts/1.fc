@@ -6,90 +6,52 @@
   this branch should be returned. Return empty cell if the branch is not found.
 -}
 
-forall X -> int is_null (X x) asm "ISNULL";
-forall X -> (tuple, ()) push_back (tuple tail, X head) asm "CONS";
-forall X -> (tuple, (X)) pop_back (tuple t) asm "UNCONS";
+forall X -> int is_null?(X x) asm "ISNULL";
+(slice, slice) load_ref_slice(slice s) asm "LDREFRTOS";
 
 () recv_internal() {
 }
 
 ;; testable
-(cell) find_branch_by_hash(int hash, cell tree) method_id {
-  tuple stack = null();
-  stack~push_back(tree);
+;; (cell) find_branch_by_hash2(int hash, cell tree) method_id {
+;;   tuple stack = null();
+;;   stack~push_back(tree);
 
-  while (~ stack.is_null()) {
-      cell c = stack~pop_back();
+;;   while (~ stack.is_null?()) {
+;;       cell c = stack~pop_back();
 
-      if (c.cell_hash() == hash) {
-        return c;
-      }
+;;       if (c.cell_hash() == hash) {
+;;         return c;
+;;       }
 
-      slice s = c.begin_parse();
+;;       slice s = c.begin_parse();
 
-      repeat (s.slice_refs()) {
-          stack~push_back(s~load_ref());
-      }
+;;       repeat (s.slice_refs()) {
+;;           stack~push_back(s~load_ref());
+;;       }
+;;   }
+  
+;;   return begin_cell().end_cell();
+;; }
+
+(cell) find_branch_by_hash_inner(int hash, cell tree) {
+  if (tree.cell_hash() == hash) {
+    return tree;
   }
   
-  return begin_cell().end_cell();
+  var s = tree.begin_parse();
+
+  repeat (s.slice_refs()) {
+    var res = find_branch_by_hash_inner(hash, s~load_ref());
+    if (~ res.is_null?()) {
+      return res;
+    }
+  }
+  
+  return null();
 }
 
-;; (cell) find_branch_by_hash2(int hash, cell tree) method_id {
-;;   cell inner = begin_cell().end_cell();
-  
-;;   var c1 = begin_cell()
-;;     .store_ref(begin_cell().end_cell())
-;;     .store_uint(1, 8);
-
-;;   var c2 = begin_cell()
-;;     .store_uint(1, 8)
-;;     .store_ref(begin_cell().end_cell());
-
-;;   var c3 = begin_cell()
-;;     .store_ref(inner)
-;;     .store_uint(1, 8);
-
-;;   inner = begin_cell().store_uint(222, 8).end_cell();
-
-;;   ;; ~dump(c1);
-;;   ;; ~dump(c2);
-;;   ;; ~dump(c3);
-
-;;   ;; var c1_ = c1.end_cell();
-
-;;   ;; var s1 = c1_.begin_parse();
-
-;;   ;; ~dump(s1);
-
-;;   ;; var ref1 = s1.preload_ref();
-
-;;   ;; ~dump(ref1);
-;;   ;; ~dump(s1);
-
-;;   ;; var i1 = s1~load_uint(8);
-
-;;   ;; ~dump(i1);
-;;   ;; ~dump(s1);
-
-;;   ;; ;; var i2 = s1~load_uint(8);
-
-;;   ;; ;; ~dump(i2);
-;;   ;; ;; ~dump(s1);
-
-;;   ;; var ref2 = s1~load_ref();
-
-;;   ;; ~dump(ref2);
-;;   ;; ~dump(s1);
-
-;;   int x0 = 10;
-
-;;   var x1 = 19.mod(16);
-;;   var x2 = (x0 - 14).mod(16);
-
-;;   ~dump(x1);
-;;   ~dump(x2);
-
-;;   return begin_cell()
-;;     .end_cell();
-;; }
+(cell) find_branch_by_hash(int hash, cell tree) method_id {
+  var branch = find_branch_by_hash_inner(hash, tree);
+  return branch.is_null?() ? begin_cell().end_cell() : branch;
+}
