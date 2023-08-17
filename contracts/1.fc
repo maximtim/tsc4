@@ -8,50 +8,68 @@
 
 forall X -> int is_null?(X x) asm "ISNULL";
 (slice, slice) load_ref_slice(slice s) asm "LDREFRTOS";
+forall X -> (tuple, ()) push_back (tuple tail, X head) asm "CONS";
+forall X -> (tuple, (X)) pop_back (tuple t) asm "UNCONS";
+
+cell find(int hash, cell tree) asm 
+"""
+  SWAP
+  1 SETGLOB
+  PUSHNULL
+  SWAP
+
+  WHILE:<{ 
+    DUP
+    ISNULL
+    NOT
+  }>DO<{
+    DUP
+    HASHCU
+    1 GETGLOB
+    EQUAL
+    IF:<{
+      1 RETARGS
+    }>
+
+    CTOS
+    DUP
+    SREFS
+    REPEAT:<{
+      LDREF
+      SWAP
+    }>
+    DROP
+  }>
+
+  NEWC
+  ENDC
+""";
 
 () recv_internal() {
 }
 
 ;; testable
-;; (cell) find_branch_by_hash2(int hash, cell tree) method_id {
-;;   tuple stack = null();
-;;   stack~push_back(tree);
+(cell) find_branch_by_hash(int hash, cell tree) method_id {
+  tuple stack = null();
+  stack~push_back(tree);
 
-;;   while (~ stack.is_null?()) {
-;;       cell c = stack~pop_back();
+  while (~ stack.is_null?()) {
+      cell c = stack~pop_back();
 
-;;       if (c.cell_hash() == hash) {
-;;         return c;
-;;       }
+      if (c.cell_hash() == hash) {
+        return c;
+      }
 
-;;       slice s = c.begin_parse();
+      slice s = c.begin_parse();
 
-;;       repeat (s.slice_refs()) {
-;;           stack~push_back(s~load_ref());
-;;       }
-;;   }
-  
-;;   return begin_cell().end_cell();
-;; }
-
-(cell) find_branch_by_hash_inner(int hash, cell tree) {
-  if (tree.cell_hash() == hash) {
-    return tree;
+      repeat (s.slice_refs()) {
+          stack~push_back(s~load_ref());
+      }
   }
   
-  var s = tree.begin_parse();
-
-  repeat (s.slice_refs()) {
-    var res = find_branch_by_hash_inner(hash, s~load_ref());
-    if (~ res.is_null?()) {
-      return res;
-    }
-  }
-  
-  return null();
+  return begin_cell().end_cell();
 }
 
-(cell) find_branch_by_hash(int hash, cell tree) method_id {
-  var branch = find_branch_by_hash_inner(hash, tree);
-  return branch.is_null?() ? begin_cell().end_cell() : branch;
+(cell) find_branch_by_hash2(int hash, cell tree) method_id {
+  return find(hash, tree);
 }
