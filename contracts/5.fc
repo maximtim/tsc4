@@ -15,56 +15,7 @@
 
 forall X -> (tuple) to_tuple (X x) asm "NOP";
 
-(int, int) calc_fn1_fn(int n) asm
-  """
-    DEC // (n-1)
-    0 PUSHINT
-    1 PUSHINT
-    ROT
-    REPEAT:<{    // repeat (n-1)
-      TUCK       // a b -> b a b
-      ADD        // -> b (a+b)
-    }>
-  """;
-
-tuple calc_fib_rest(int fn, int fn1, int k) asm(k fn fn1)
-  """
-    s2 PUSH
-    2 SUBCONST
-    REPEAT:<{
-      DUP2        // a b -> a b a b
-      ADD         // a b -> (a+b)
-      s3 s2 XCHG  // k a b c -> a k b c
-    }>
-    ROT
-    TUPLEVAR
-  """;
-
-tuple calc_fib(int fn, int fn1, int n, int k) asm(k n fn fn1)
-  """
-    // 10 PUSHINT
-    // c7 POP
-    //
-    ROT
-    DEC
-    REPEAT:<{    // repeat (n-1)
-      TUCK       // a b -> b a b
-      ADD        // -> b (a+b)
-    }>
-    s2 PUSH
-    DEC
-    REPEAT:<{     // repeat (k-1)
-      DUP2        // a b -> a b a b
-      ADD         // a b -> (a+b)
-      s3 s2 XCHG  // k a b c -> a k b c
-    }>
-    ROT
-    TUPLEVAR
-    // c7 PUSH
-    1 RETARGS
-  """;
-
-tuple calc_fib2(int fn, int fn1, int n, int k) asm
+tuple calc_fib(int fn, int fn1, int n, int k) asm
   """
     // 10 PUSHINT
     // c7 POP
@@ -88,30 +39,10 @@ tuple calc_fib2(int fn, int fn1, int n, int k) asm
 
 ;; testable
 
-;; (tuple) fibonacci_sequence (int n, int k) method_id {
-;;   if (k == 0) { return empty_tuple(); }
-
-;;   var (f0, f1) = (0, 1);
-
-;;   repeat (n - 1) {
-;;     (f0, f1) = (f1, f0 + f1);
-;;   }
-
-;;   if (k == 1) { 
-;;     if (n == 0) { return to_tuple([0]); }
-
-;;     return to_tuple([f1]); 
-;;   }
-
-;;   return n == 0 
-;;     ? calc_fib_rest(0, 1, k)
-;;     : calc_fib_rest(f1, f0 + f1, k);
-;; }
-
 (tuple) fibonacci_sequence (int n, int k) method_id {
   if (k == 0) { return empty_tuple(); }
   if ((k == 1) & (n == 0)) { return to_tuple([0]); }
 
-  return calc_fib2(0, 1, n, k);
+  return calc_fib(0, 1, n, k);
 }
 
