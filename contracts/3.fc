@@ -85,6 +85,12 @@ slice skip_first(slice x, int offset) asm "SDSKIPFIRST";
 ;; testable
 
 (cell) find_and_replace(int flag, int value, cell linked_list) method_id {
+  if (flag <= 0) {
+    return begin_cell().end_cell();
+  }
+  if (value <= 0) {
+    return begin_cell().end_cell();
+  }
   var result = empty_tuple();
   var writer = begin_cell();
   var flag_len = flag.bit_size();
