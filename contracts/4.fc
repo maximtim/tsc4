@@ -34,13 +34,23 @@ cell shift_chars(int shift, slice slc) {
     ;;     ? (char + shift - 97) % (26) + 97
     ;;     : char;
 
+    ;; var new_char = char - 65;
+    ;; if (new_char.isnneg()) {
+    ;;   if (new_char < 26) {
+    ;;     char = (new_char + shift) % 26 + 65;
+    ;;   }
+    ;;   if ((new_char > 31) & (new_char < 58)) {
+    ;;     char = (new_char - 32 + shift) % 26 + 97;
+    ;;   }
+    ;; }
+
     var new_char = char - 65;
-    if (new_char.isnneg()) {
-      if (new_char < 26) {
-        char = (new_char + shift) % 26 + 65;
-      }
-      if ((new_char > 31) & (new_char < 58)) {
+    if (new_char < 58) {
+      if ((new_char > 31)) {
         char = (new_char - 32 + shift) % 26 + 97;
+      }
+      if (new_char.isnneg() & (new_char < 26)) {
+        char = (new_char + shift) % 26 + 65;
       }
     }
     
