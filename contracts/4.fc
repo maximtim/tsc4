@@ -79,7 +79,7 @@ cell shift_chars(int shift_upper, int shift_lower, slice slc) {
 
 ;; testable
 (cell) caesar_cipher_decrypt(int shift, cell text) method_id {
-  return shift_chars(65 - shift, 97 - shift, text.begin_parse());
+  return shift_chars(- shift - 65, - shift - 97, text.begin_parse());
 }
 
 
