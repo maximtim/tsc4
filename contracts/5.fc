@@ -17,9 +17,6 @@ forall X -> (tuple) to_tuple (X x) asm "NOP";
 
 tuple calc_fib(int fn, int fn1, int n, int k) asm
   """
-    // 10 PUSHINT
-    // c7 POP
-    //
     DUP
     1 SETGLOB
     ADD
@@ -30,7 +27,6 @@ tuple calc_fib(int fn, int fn1, int n, int k) asm
     }>
     1 GETGLOB
     TUPLEVAR
-    // c7 PUSH
     1 RETARGS
   """;
 

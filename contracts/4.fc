@@ -6,7 +6,9 @@
   character should go to the beginning. Return new text encoded in cell.
 -}
 
-(int) mod(int x, int y) asm "MOD";
+forall X -> (tuple, ()) push_back (tuple tail, X head) asm "CONS";
+forall X -> (tuple, (X)) pop_back (tuple t) asm "UNCONS";
+(slice, slice) load_ref_slice(slice s) asm "LDREFRTOS";
 
 int is_upper_letter?(int symbol) inline {
   return (symbol > 64) & (symbol < 91);
@@ -24,9 +26,9 @@ cell shift_chars(int shift, cell text) {
     var char = slc~load_uint(8);
 
     char = is_upper_letter?(char)
-      ? (char - 65 + shift).mod(26) + 65
+      ? (char - 65 + shift) % (26) + 65
       : is_lower_letter?(char)
-        ? (char - 97 + shift).mod(26) + 97
+        ? (char - 97 + shift) % (26) + 97
         : char;
     
     new_cell_b = new_cell_b
@@ -46,12 +48,86 @@ cell shift_chars(int shift, cell text) {
   return new_cell_b.end_cell();
 }
 
+cell shift_chars2(int shift, slice slc) {
+  var new_cell_b = begin_cell();
+  var s_len = slc.slice_bits() / 8;
+  ;; tuple cells_stack = null();
+  
+  repeat (s_len) {
+    var char = slc~load_uint(8);
+
+    char = is_upper_letter?(char)
+      ? (char - 65 + shift) % (26) + 65
+      : is_lower_letter?(char)
+        ? (char - 97 + shift) % (26) + 97
+        : char;
+    
+    new_cell_b = new_cell_b
+      .store_uint(
+        ;; (slc~load_uint(8) + shift).mod(256), ;; shifting and copying
+        char,
+        8);
+  }
+
+  cell next = null();
+
+  if (slc.slice_refs() > 0) {
+    next = shift_chars2(shift, slc~load_ref_slice());
+    new_cell_b = new_cell_b.store_ref(next);
+  }
+
+  return new_cell_b.end_cell();
+}
+
+cell shift_chars3(int shift, cell text) {
+  var slc = text.begin_parse();
+  var new_cell_b = begin_cell();
+  tuple cells_b_stack = null();
+
+  while ((var s_len = slc.slice_bits() / 8)) {
+    repeat (s_len) {
+      var char = slc~load_uint(8);
+
+      char = is_upper_letter?(char)
+        ? (char - 65 + shift) % (26) + 65
+        : is_lower_letter?(char)
+          ? (char - 97 + shift) % (26) + 97
+          : char;
+      
+      new_cell_b = new_cell_b
+        .store_uint(
+          ;; (slc~load_uint(8) + shift).mod(256), ;; shifting and copying
+          char,
+          8);
+    }
+
+    if (slc.slice_refs() > 0) {
+      cells_b_stack~push_back(new_cell_b);
+      new_cell_b = begin_cell();
+      slc = slc~load_ref_slice();
+    }
+  }
+  
+  var root = new_cell_b;
+
+  while (~ cells_b_stack.null?()) {
+    var next = cells_b_stack~pop_back();
+    root = next.store_ref(root.end_cell());
+  }
+
+  return root.end_cell();
+}
+
 () recv_internal() {
 }
 
 ;; testable
 (cell) caesar_cipher_encrypt(int shift, cell text) method_id {
   return shift_chars(shift, text);
+}
+
+(cell) caesar_cipher_encrypt2(int shift, cell text) method_id {
+  return shift_chars2(shift, text.begin_parse());
 }
 
 ;; testable
