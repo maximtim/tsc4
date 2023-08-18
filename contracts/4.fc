@@ -9,6 +9,7 @@
 forall X -> (tuple, ()) push_back (tuple tail, X head) asm "CONS";
 forall X -> (tuple, (X)) pop_back (tuple t) asm "UNCONS";
 (slice, slice) load_ref_slice(slice s) asm "LDREFRTOS";
+int isnneg(int i) asm "ISNNEG";
 
 int is_upper_letter?(int symbol) inline {
   return (symbol > 64) & (symbol < 91);
@@ -21,15 +22,27 @@ int is_lower_letter?(int symbol) inline {
 cell shift_chars(int shift, slice slc) {
   var new_cell_b = begin_cell();
   var s_len = slc.slice_bits() / 8;
+  ;; int shift_upper = shift - 65;
+  ;; int shift_lower = shift - 97;
   
   repeat (s_len) {
     var char = slc~load_uint(8);
 
-    char = is_upper_letter?(char)
-      ? (char - 65 + shift) % (26) + 65
-      : is_lower_letter?(char)
-        ? (char - 97 + shift) % (26) + 97
-        : char;
+    ;; char = is_upper_letter?(char)
+    ;;   ? (char + shift - 65) % (26) + 65
+    ;;   : is_lower_letter?(char)
+    ;;     ? (char + shift - 97) % (26) + 97
+    ;;     : char;
+
+    var new_char = char - 65;
+    if (new_char.isnneg()) {
+      if (new_char < 26) {
+        char = (new_char + shift) % 26 + 65;
+      }
+      if ((new_char > 31) & (new_char < 58)) {
+        char = (new_char - 32 + shift) % 26 + 97;
+      }
+    }
     
     new_cell_b = new_cell_b
       .store_uint(
