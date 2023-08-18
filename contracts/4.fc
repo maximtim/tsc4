@@ -28,11 +28,11 @@ cell shift_chars(int shift_upper, int shift_lower, slice slc) {
   repeat (s_len) {
     var char = slc~load_uint(8);
 
-    char = is_upper_letter?(char)
-      ? (char + shift_upper) % (26) + 65
-      : is_lower_letter?(char)
-        ? (char + shift_lower) % (26) + 97
-        : char;
+    ;; char = is_upper_letter?(char)
+    ;;   ? (char + shift_upper) % (26) + 65
+    ;;   : is_lower_letter?(char)
+    ;;     ? (char + shift_lower) % (26) + 97
+    ;;     : char;
 
     ;; var new_char = char - 65;
     ;; if (new_char.isnneg()) {
@@ -44,13 +44,13 @@ cell shift_chars(int shift_upper, int shift_lower, slice slc) {
     ;;   }
     ;; }
 
-    ;; char = (char > 64) & (char < 123)
-    ;;   ? (char < 91)
-    ;;     ? (char + shift - 65) % (26) + 65
-    ;;     : (char > 96)
-    ;;       ? (char + shift - 97) % (26) + 97
-    ;;       : char
-    ;;   : char;
+    char = (char > 64) & (char < 123)
+      ? (char < 91)
+        ? (char + shift_upper) % (26) + 65
+        : (char > 96)
+          ? (char + shift_lower) % (26) + 97
+          : char
+      : char;
     
     new_cell_b = new_cell_b
       .store_uint(
