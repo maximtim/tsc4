@@ -44,18 +44,59 @@ cell shift_chars(int shift_upper, int shift_lower, slice slc) {
     ;;   }
     ;; }
 
-    char = (char > 64) & (char < 123)
-      ? (char < 91)
-        ? (char + shift_upper) % (26) + 65
-        : (char > 96)
-          ? (char + shift_lower) % (26) + 97
-          : char
-      : char;
+    ;; char = (char > 64) & (char < 123)
+    ;;   ? (char < 91)
+    ;;     ? (char + shift_upper) % (26) + 65
+    ;;     : (char > 96)
+    ;;       ? (char + shift_lower) % (26) + 97
+    ;;       : char
+    ;;   : char;
+
+    if ((char > 64) & (char < 123)) {
+      if (char < 91) {
+        new_cell_b = new_cell_b
+          .store_uint(
+            (char + shift_upper) % (26) + 65,
+            8);
+      } elseif (char > 96) {
+        new_cell_b = new_cell_b
+          .store_uint(
+            (char + shift_lower) % (26) + 97,
+            8);
+      } else {
+        new_cell_b = new_cell_b
+          .store_uint(
+            char,
+            8);
+      }
+    } else {
+      new_cell_b = new_cell_b
+        .store_uint(
+          char,
+          8);
+    }
+
+    ;; if (is_upper_letter?(char)) {
+    ;;   new_cell_b = new_cell_b
+    ;;     .store_uint(
+    ;;       (char + shift_upper) % (26) + 65,
+    ;;       8);
+    ;; } elseif (is_lower_letter?(char)) {
+    ;;   new_cell_b = new_cell_b
+    ;;     .store_uint(
+    ;;       (char + shift_lower) % (26) + 97,
+    ;;       8);
+    ;; } else {
+    ;;   new_cell_b = new_cell_b
+    ;;     .store_uint(
+    ;;       char,
+    ;;       8);
+    ;; }
     
-    new_cell_b = new_cell_b
-      .store_uint(
-        char,
-        8);
+    ;; new_cell_b = new_cell_b
+    ;;   .store_uint(
+    ;;     char,
+    ;;     8);
   }
 
   cell next = null();
