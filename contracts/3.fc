@@ -24,6 +24,7 @@ forall X -> (tuple, (X)) pop_back (tuple t) asm "UNCONS";
 int is_prefix?(slice x, slice y) asm "SDPFX";
 forall X -> int is_null? (X x) asm "ISNULL";
 slice skip_first(slice x, int offset) asm "SDSKIPFIRST";
+(slice, slice) load_ref_slice(slice s) asm "LDREFRTOS";
 
 (slice, (slice, int)) read_full_slice(slice reader, slice prev) {
   var result = begin_cell();
@@ -48,7 +49,7 @@ slice skip_first(slice x, int offset) asm "SDSKIPFIRST";
       total_read_len += read_len;
     } else {
       if (reader.slice_refs() > 0) {
-        reader = reader~load_ref().begin_parse();
+        reader = reader~load_ref_slice();
       } else {
         not_ended = 0;
       }
