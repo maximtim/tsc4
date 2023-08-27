@@ -22,35 +22,9 @@ int is_lower_letter?(int symbol) inline {
 cell shift_chars(int shift_upper, int shift_lower, slice slc) {
   var new_cell_b = begin_cell();
   var s_len = slc.slice_bits() / 8;
-  ;; int shift_upper = shift - 65;
-  ;; int shift_lower = shift - 97;
   
   repeat (s_len) {
     var char = slc~load_uint(8);
-
-    ;; char = is_upper_letter?(char)
-    ;;   ? (char + shift_upper) % (26) + 65
-    ;;   : is_lower_letter?(char)
-    ;;     ? (char + shift_lower) % (26) + 97
-    ;;     : char;
-
-    ;; var new_char = char - 65;
-    ;; if (new_char.isnneg()) {
-    ;;   if (new_char < 26) {
-    ;;     char = (new_char + shift) % 26 + 65;
-    ;;   }
-    ;;   if ((new_char > 31) & (new_char < 58)) {
-    ;;     char = (new_char - 32 + shift) % 26 + 97;
-    ;;   }
-    ;; }
-
-    ;; char = (char > 64) & (char < 123)
-    ;;   ? (char < 91)
-    ;;     ? (char + shift_upper) % (26) + 65
-    ;;     : (char > 96)
-    ;;       ? (char + shift_lower) % (26) + 97
-    ;;       : char
-    ;;   : char;
 
     if ((char > 64) & (char < 123)) {
       if (char < 91) {
@@ -75,28 +49,6 @@ cell shift_chars(int shift_upper, int shift_lower, slice slc) {
           char,
           8);
     }
-
-    ;; if (is_upper_letter?(char)) {
-    ;;   new_cell_b = new_cell_b
-    ;;     .store_uint(
-    ;;       (char + shift_upper) % (26) + 65,
-    ;;       8);
-    ;; } elseif (is_lower_letter?(char)) {
-    ;;   new_cell_b = new_cell_b
-    ;;     .store_uint(
-    ;;       (char + shift_lower) % (26) + 97,
-    ;;       8);
-    ;; } else {
-    ;;   new_cell_b = new_cell_b
-    ;;     .store_uint(
-    ;;       char,
-    ;;       8);
-    ;; }
-    
-    ;; new_cell_b = new_cell_b
-    ;;   .store_uint(
-    ;;     char,
-    ;;     8);
   }
 
   cell next = null();
